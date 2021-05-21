@@ -1,0 +1,5 @@
+AWSIoTPythonSDK
+cryptography
+boto3
+requests
+flask

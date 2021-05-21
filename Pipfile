@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+chalice = {extras = ["cdk"], version = "*"}
+cryptography = "*"
+boto3 = "*"
+requests = "*"
+AWSIoTPythonSDK = "*"
+Flask = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

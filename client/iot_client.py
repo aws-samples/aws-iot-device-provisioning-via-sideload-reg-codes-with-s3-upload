@@ -243,7 +243,7 @@ class IoTThing(AWSIoTMQTTClient):
         cert_file.write(cert_pem.encode('utf-8'))
         cert_file.flush()
 
-        self.configureCredentials("/tmp/AmazonRootCA1.pem", pk_file.name, cert_file.name)
+        self.configureCredentials("AmazonRootCA1.pem", pk_file.name, cert_file.name)
 
         attempts = 0
         time.sleep(1)

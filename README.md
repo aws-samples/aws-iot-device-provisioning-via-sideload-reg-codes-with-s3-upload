@@ -7,10 +7,11 @@ This solves the use case of allowing an authenticated user the ability to one-ti
 a device without having to be directly connected to it or offline.
 
 This sample also contains some useful code snippets/libraries to demo the following:
-1) CDK integration with Chalice to deploy API Gateway APIs, Lambda functions, DynamoDB tables, and S3 buckets
-2) Narrowly scoped IoT policies with policy variables and AWS IoT Credential Provider permissions
-3) AWS IoT Credential Provider API calls
-4) AWS SigV4 Authentication for API Gateway API calls
+1. CDK integration with Chalice to deploy API Gateway APIs, Lambda functions, DynamoDB tables, and S3 buckets
+2. Narrowly scoped IoT policies with policy variables and AWS IoT Credential Provider permissions
+3. AWS IoT Credential Provider API calls
+4. IAM Role with AWS IoT Credential Provider Policy Variables
+5. AWS SigV4 Authentication for API Gateway API calls
 
 ### Architecture Overview
 
@@ -92,27 +93,25 @@ your environment.
 
 ### Deploying Code
 
-Once the dependencies are installed, you'll need to bootstrap your AWS account with the resouces the CDK needs.
+1. Once the dependencies are installed, you'll need to bootstrap your AWS account with the resouces the CDK needs.
 
 `cdk bootstrap`
 
-Then you can deploy your application using the CDK.
+2. Then you can deploy your application using the CDK.
 
 `cdk deploy`
 
 
-There will be two pieces of infrastructure left to manually provision that can not be deployed with CloudFormation, and that's
+3. There will be two pieces of infrastructure left to manually provision that can not be deployed with CloudFormation, and that's
 the AWS IoT Credential Provider role alias and the AWS IoT Thing Types.
 
-The creation of the role alias can not be done via the console and must be done via a CLI command:
+    1. The creation of the role alias can not be done via the console and must be done via a CLI command:
+    `aws iot create-role-alias --role-alias <tenant> --role-arn <Role arn from CDK template>`
+    You'll be using a fake "tenant" as the role alias name. In our case, that tenant name is "acme".
+    The role arn should come from the "AWSIoTCredentialProviderRole" role that was deployed with the CloudFormation template.
 
-`aws iot create-role-alias --role-alias <tenant> --role-arn <Role arn from CDK template>`
-
-You'll be using a fake "tenant" as the role alias name. In our case, that tenant name is "acme".
-The role arn should come from the "AWSIoTCredentialProviderRole" role that was deployed with the CloudFormation template.
-
-You'll also need to go into the AWS IoT Console and create a Thing Types. This should be named "deviceTypeA".
-These Thing Types do not need any configuration other than their names.
+    2. You'll also need to go into the AWS IoT Console and create a Thing Types. This should be named `deviceTypeA`.
+    These Thing Types do not need any configuration other than their names.
 
 ### IoT Client Configuration
 
@@ -129,11 +128,15 @@ the correct environment variables are configured. These are:
 
 A sample Docker environment file has been included.
 
+Finally, you'll need to download the Amazon Root CA server certificate from [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem).
+Make sure to store it in the same directory as the IoT Client. It's especially important to make sure to do this *before*
+you build your Docker image if that's the runtime you choose to use.
+
 #### Option A - Running natively in Python:
 
 You'll need to make sure the correct environment variables mentioned above are configured. The exact commands to do
-this might vary slightly between operating systems and runtime environments. But generally it's accomplished by running 
-`$ <KEY>=<VALUE>` for each environment variable.
+this might vary slightly between operating systems and runtime environments. But generally in standard Linux/Unix shells 
+it's accomplished by running `$ export <KEY>=<VALUE>` for each environment variable.
 
 There are no additional arguments to pass the Python code, so you're ready to start the client.
 
@@ -165,8 +168,10 @@ The overview of the demo steps are as follows:
     2. Initialize the MQTT client with the certificate
     3. Call the AWS IoT Credentials Provider to receive AWS STS credentials
     4. Call the Registration API with a SigV4 authentication header derived from the STS credentials 
-    to receive an S3  pre-signed URL
-    5. Upload sample data to the S3 bucket created in the CloudFormation stack using the S3 pre-signed URL 
+    to receive an S3 pre-signed URL
+    5. Upload sample data to the S3 bucket created in the CloudFormation stack using the S3 pre-signed URL (object key: acme/<thing name>/sample)
+    6. Upload sample data to the same S3 bucket using the standard Boto3 SDK with the permissions provided by the 
+    AWS IoT Credentials Provider (object key: <thing name>/sample)
 
 ### Detailed steps
 1. Local IoT client should already be started by this point
@@ -185,7 +190,7 @@ The registration token will then be used to authenticate to the backend and retr
 also then be able to complete the demo as previously described. Please note the token expires in 5 minutes.
 
 4. If successful, the IoT client should now be able to complete the demo on its own. You'll know everything was successful 
-when the last output from the IoT client is "Successfully uploaded data to S3". Open the S3 bucket that was created
+when the last output from the IoT client is "Successfully uploaded object to S3 via Boto". Open the S3 bucket that was created
 in the CloudFormation template and confirm that the sample data is shown there with a key prefix of "<tenant>/<thing_name>/sample_data_".
 
 ## Cleanup

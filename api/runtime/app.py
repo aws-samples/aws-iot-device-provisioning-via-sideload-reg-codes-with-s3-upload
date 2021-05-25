@@ -20,9 +20,9 @@ upload_bucket = os.environ.get('APP_UPLOAD_BUCKET', '')
 
 iot_client = boto3.client('iot')
 
-tenant_names = ['alpha', 'bravo', 'charlie', 'delta']
+tenant_names = ['acme']
 locations = ['bos', 'jfk', 'lax', 'sfo', 'atl', 'chi']
-device_type = ['typeA', 'typeB', 'typeC']
+device_type = ['deviceTypeA']
 
 
 @app.route('/token', methods=['GET'])
@@ -70,7 +70,7 @@ def get_certificate():
     return Response(body=response_body, status_code=status_code, headers={'Content-Type': 'application/json'})
 
 
-@app.route('/upload', methods=['POST'], authorizer=authorizer)
+@app.route('/upload', methods=['GET'], authorizer=authorizer)
 def upload_files():
     request = app.current_request
     context = request.context
@@ -105,8 +105,11 @@ def upload_files():
         },
         ExpiresIn=600
     )
-
-    return presigned_url
+    response = {
+        "presignedUrl": presigned_url,
+        "uploadBucket": upload_bucket
+    }
+    return response
 
 
 def retrieve_metadata_for_token(body):

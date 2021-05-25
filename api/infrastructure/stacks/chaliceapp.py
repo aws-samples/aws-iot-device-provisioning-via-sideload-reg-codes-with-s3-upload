@@ -4,7 +4,6 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
     core as cdk,
 )
-from aws_cdk.aws_iam import ManagedPolicy
 from aws_cdk.aws_iot import CfnPolicy
 from chalice.cdk import Chalice
 from aws_cdk import aws_s3
@@ -23,10 +22,7 @@ class ChaliceApp(cdk.Stack):
             self, 'ChaliceApp', source_dir=RUNTIME_SOURCE_DIR
         )
 
-        # things_registration_policy = ManagedPolicy.from_aws_managed_policy_name('AWSIoTThingsRegistration')
-        # self.chalice.get_role('DefaultRole').add_managed_policy(things_registration_policy)
-
-        self.iot_policy = CfnPolicy(self, 'IoTPolicy', policy_document=iot_default_policy, policy_name='ScopedPolicy')
+        self.iot_policy = self._create_iot_policy()
 
         self.dynamodb_table = self._create_ddb_table()
 
@@ -34,7 +30,10 @@ class ChaliceApp(cdk.Stack):
 
         self.credential_provider_role = self._create_credential_provider_role()
 
-        self._attach_permissions()
+        self._attach_chalice_permissions()
+
+    def _create_iot_policy(self):
+        return CfnPolicy(self, 'IoTPolicy', policy_document=iot_default_policy, policy_name='ScopedPolicy')
 
     def _create_s3_upload_bucket(self):
         s3_bucket = aws_s3.Bucket(
@@ -66,33 +65,52 @@ class ChaliceApp(cdk.Stack):
                       value=dynamodb_table.table_name)
         return dynamodb_table
 
-    def _attach_permissions(self):
+    def _create_credential_provider_role(self):
+        """
+        Create Credentials Provider Role
+        :return:
+        credentials provider role object
+        """
+        credential_provider_role = Role(
+            self,
+            "AWSIoTCredentialProviderRole",
+            assumed_by=ServicePrincipal("credentials.iot.amazonaws.com"),
+        )
+
+        # Add API Gateway execute-api permissions
+        rest_api_id = self.chalice.get_resource("RestAPI")
+        credential_provider_role.add_to_policy(PolicyStatement(
+            resources=["arn:aws:execute-api:*:*:{0}/api/*/*".format(rest_api_id.ref)],
+            actions=["execute-api:Invoke"]
+        ))
+
+        # Add S3 bucket upload permissions to specific key for thing
+        credential_provider_role.add_to_policy(PolicyStatement(
+            resources=[self.s3_upload_bucket.bucket_arn + "/${credentials-iot:ThingName}/*"],
+            actions=["s3:PutObject", "s3:GetObject"]
+        ))
+
+        return credential_provider_role
+
+    def _attach_chalice_permissions(self):
+        """
+        Attach permissions to role created by Chalice.
+        Chalice uses the logical name of 'Default Role' for its default role
+
+        :return:
+        """
         self.dynamodb_table.grant_read_write_data(
             self.chalice.get_role('DefaultRole')
         )
         self.s3_upload_bucket.grant_read_write(
             self.chalice.get_role('DefaultRole')
         )
+
+        # Managed policy for API to register things, request certificates from AWS IoT, and attach policies
+        # Chalice tries to create some of these policies but those aren't sufficient
         chalice_role = self.chalice.get_resource('DefaultRole')
         chalice_role.managed_policy_arns = ['arn:aws:iam::aws:policy/service-role/AWSIoTThingsRegistration']
 
-    def _create_credential_provider_role(self):
-
-        credential_provider_role = Role(
-            self,
-            "AWSIoTCredentialProviderRole",
-            assumed_by=ServicePrincipal("credentials.iot.amazonaws.com"),
-        )
-        rest_api_id = self.chalice.get_resource("RestAPI")
-        credential_provider_role.add_to_policy(PolicyStatement(
-            resources=["arn:aws:execute-api:*:*:{0}/api/*/*".format(rest_api_id.ref)],
-            actions=["execute-api:Invoke"]
-        ))
-        credential_provider_role.add_to_policy(PolicyStatement(
-            resources=[self.s3_upload_bucket.bucket_arn],
-            actions=["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
-        ))
-        return credential_provider_role
 
 iot_default_policy = {
     "Statement": [

@@ -63,9 +63,25 @@ more details.
 
 `npm install -g aws-cdk`
 
-Next you'll need to install the requirements for the project.
+Next you'll need to install the requirements for the API to deploy it with CDK.
 
-`pip install -r requirements.txt`
+There are two ways to do this. Either globally from the standard shell or using a virtual environment such as `pipenv`
+
+#### Installing dependencies with pipenv
+
+The recommended way to install Python dependencies is with a virtual environment such as Pipenv. There's an included Pipfile
+with the repo that you can use to install all dependencies to run the client. First you'll need to make sure Pipenv is installed.
+https://pipenv.pypa.io/en/latest/install/
+
+Then you can use pipenv to install all the Python dependencies.
+
+`pipenv install`
+
+Once all dependencies are installed, you'll need to activate the shell with `pipenv shell`
+
+#### Installing Dependencies Globally
+
+From the root directory, `cd api` and then `pip install -r requirements.txt`
 
 There's also separate requirements files in the ``infrastructure``
 and ``runtime`` directories if you'd prefer to have separate virtual
@@ -74,6 +90,10 @@ environments for your CDK and Chalice app.
 To deploy the application, ``cd`` to the ``infrastructure`` directory.
 If this is you're first time using the CDK you'll need to bootstrap
 your environment.
+
+### Deploying Code
+
+Once the dependencies are installed, you'll need to bootstrap your AWS account with the resouces the CDK needs.
 
 `cdk bootstrap`
 
@@ -89,10 +109,10 @@ The creation of the role alias can not be done via the console and must be done 
 
 `aws iot create-role-alias --role-alias <tenant> --role-arn <Role arn from CDK template>`
 
-You'll need to run this command 4 times replacing <tenant> with "alpha", "bravo", "charlie", and "delta".
+You'll be using a fake "tenant" as the role alias name. In our case, that tenant name is "acme".
 The role arn should come from the "AWSIoTCredentialProviderRole" role that was deployed with the CloudFormation template.
 
-You'll also need to go into the AWS IoT Console and create 3 Thing Types. These should be named "typeA", "typeB", and "typeC".
+You'll also need to go into the AWS IoT Console and create a Thing Types. This should be named "deviceTypeA".
 These Thing Types do not need any configuration other than their names.
 
 ### IoT Client Configuration
@@ -100,9 +120,9 @@ These Thing Types do not need any configuration other than their names.
 The IoT client can either be run as a Docker container or a native Python application. In both cases, you'll need to ensure
 the correct environment variables are configured. These are:
 
-IOT_ENDPOINT - This can be found under "Settings" in the IoT console or by running `aws iot describe-endpoint` in the AWS CLI
+IOT_ENDPOINT - PREFIX ONLY (everything before ".iot" or "-ats.iot"). This can be found under "Settings" in the IoT console or by running `aws iot describe-endpoint` in the AWS CLI
 
-CREDENTIAL_ENDPOINT - This can only be found by running `aws iot describe-endpoint —endpoint-type iot:CredentialProvider` in the AWS CLI
+CREDENTIAL_ENDPOINT - PREFIX ONLY (everything before ".credentials"). This can only be found by running `aws iot describe-endpoint --endpoint-type iot:CredentialProvider` in the AWS CLI
 
 AWS_DEFAULT_REGION - Eg. us-east-1
 
@@ -111,24 +131,10 @@ REG_API - Endpoint of Registration API (eg. https://abc123.execute-api.us-east-1
 A sample Docker environment file has been included.
 
 #### Option A - Running natively in Python:
-For running natively with Python, you'll need to install the dependencies from the requirements.txt file the same way you did with the
-CDK requirements.
-
-The recommended way to install Python dependencies is with a virtual environment such as Pipenv. There's an included Pipfile
-with the repo that you can use to install all dependencies to run the client. First you'll need to make sure Pipenv is installed.
-https://pipenv.pypa.io/en/latest/install/
-
-Then you can use pipenv to install all the Python dependencies.
-
-`pipenv install`
 
 You'll need to make sure the correct environment variables mentioned above are configured. The exact commands to do
 this might vary slightly between operating systems and runtime environments. But generally it's accomplished by running 
 `$ <KEY>=<VALUE>` for each environment variable.
-
-When using pipenv, you'll need to activate your environment.
-
-`pipenv shell`
 
 There are no additional arguments to pass the Python code, so you're ready to start the client.
 

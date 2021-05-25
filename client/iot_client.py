@@ -467,15 +467,31 @@ class IoTThing(AWSIoTMQTTClient):
 
     def upload_file_to_s3(self, body="Hello world"):
         files = {"file": body}
-        url = "https://oiic4utbc6.execute-api.us-east-1.amazonaws.com/api/upload"
-        api_client = RequestWithAWSAuth(request_url=url, boto_session=self.boto_session)
-        s3_presigned_url, status_code = api_client.post(url, {"foo": "bar"})
+        s3_metadata_api_url = "{0}/api/upload".format(os.environ['REG_API'])
+        # Instantiate API client with AWS SigV4 signed headers
+        # And then send request to endpoint (API Gateway) to retrieve pre-signed URL
+        api_client = RequestWithAWSAuth(request_url=s3_metadata_api_url, boto_session=self.boto_session)
+        s3_data, status_code = api_client.get(s3_metadata_api_url)
+        s3_presigned_url = json.loads(s3_data)['presignedUrl']
         print(s3_presigned_url)
-        s3_response = requests.put(s3_presigned_url, data=body)
-        print(s3_response.text)
-        print(s3_response.status_code)
-        if s3_response.status_code == 200:
-            print("Successfully uploaded data to S3")
+
+        # Upload file to S3 with pre-signed URL
+        presigned_s3_response = requests.put(s3_presigned_url, data=body)
+        print(presigned_s3_response.text)
+        print(presigned_s3_response.status_code)
+        if presigned_s3_response.status_code == 200:
+            print("Successfully uploaded data to S3 pre-signed URL")
+
+        # Now we're going to upload data using the standard S3 client
+        # using the permissions provided by the credentials provider
+        upload_bucket = json.loads(s3_data)['uploadBucket']
+        s3_client = self.boto_session.resource('s3')
+        upload_bucket = s3_client.Bucket(upload_bucket)
+        upload_bucket.put_object(
+            Key="{0}/sampledata_{1}".format(self.thing_name, str(uuid.uuid4())[:5]),
+            Body=b'Sample Data from Boto client'
+        )
+        print("Successfully uploaded object to S3 via Boto")
 
     def firmware_upgrade(self, job_document):
         self.shadow['firmware_version'] = job_document['firmware_version']

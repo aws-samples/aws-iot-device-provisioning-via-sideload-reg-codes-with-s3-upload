@@ -108,7 +108,7 @@ class RequestWithAWSAuth:
 
         return region, service, host, uri
 
-    def get(self, request_url, add_headers):
+    def get(self, request_url, add_headers=None):
 
         # canonical_querystring = ''
         request_body = ''
@@ -124,6 +124,8 @@ class RequestWithAWSAuth:
         r = requests.get(request_url, headers=headers)
         print('\nRESPONSE++++++++++++++++++++++++++++++++++++'
               'Response code: {0}\n{1}'.format(r.status_code, r.text))
+
+        return r.text, r.status_code
 
     def post(self, request_url, body, add_headers=None):
 

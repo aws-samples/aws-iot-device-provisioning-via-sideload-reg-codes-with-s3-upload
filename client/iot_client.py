@@ -453,7 +453,7 @@ class IoTThing(AWSIoTMQTTClient):
         }
         r = requests.get(
             'https://{0}.credentials.iot.{1}.amazonaws.com/role-aliases/{2}/credentials'.format(
-                os.environ['CREDENTIAL_ENDPOINT'], os.environ['AWS_DEFAULT_REGION'], self.shadow['tenant']), headers=iot_headers, cert=(cert_file.name, pk_file.name),
+                os.environ['CREDENTIALS_ENDPOINT'], os.environ['AWS_DEFAULT_REGION'], self.shadow['tenant']), headers=iot_headers, cert=(cert_file.name, pk_file.name),
             verify="/tmp/AmazonRootCA1.pem")
         print(r.status_code)
         sts_credentials = r.json()['credentials']

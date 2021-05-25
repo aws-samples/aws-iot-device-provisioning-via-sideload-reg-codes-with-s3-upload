@@ -27,6 +27,23 @@ device_type = ['deviceTypeA']
 
 @app.route('/token', methods=['GET'])
 def create_token():
+    """
+    Returns a registration code to be used by the device to self-register with AWS IoT via the /certificate route
+    ---
+    tags:
+        - Token Generation API
+    parameters:
+        None
+    responses:
+        200:
+            description: Valid registration token to be used to provision device
+            schema:
+                properties:
+                    registrationToken:
+                        type: string
+                        description: One-time use registration token
+
+    """
     reg_token = str(uuid.uuid4())
     item = {
         'regToken': reg_token,
@@ -42,6 +59,40 @@ def create_token():
 
 @app.route('/certificate', methods=['POST'])
 def get_certificate():
+    """
+    Returns a signed certificate issued by the AWS IoT CA that can be used to connect to the AWS IoT Core Device Gateway
+    when provided with a registration code and CSR
+    ---
+    tags:
+        - Certificate issuer API
+    parameters:
+        - name: csr
+          in: body
+          type: string
+          required: true
+        - name: regToken
+          in: body
+          type: string
+          required: true
+        - consumes:
+          - application/json
+    responses:
+        200:
+            description: Signed certificate and assigned tenant
+            schema:
+                properties:
+                    certificate:
+                        type: string
+                        description: AWS IoT signed certificate
+                    tenant:
+                        type: string
+                        description: tenant assigned to token when the token was generated during /token
+        400:
+            description: Missing or invalid parameter in request
+        401:
+            description: Invalid or expired registration token
+    """
+
     request = app.current_request
     body = request.json_body
     app.log.debug(body)
@@ -72,6 +123,52 @@ def get_certificate():
 
 @app.route('/upload', methods=['GET'], authorizer=authorizer)
 def upload_files():
+    """
+    Returns an S3 pre-signed URL and the associated bucket name for the client to upload an object to S3 directly
+    Authorization: IAM
+    This endpoint requires AWS SigV4 authorization. For more details see:
+    https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html
+    https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
+    ---
+    tags:
+        - S3 Uploader Helper API
+    parameters:
+        - name: Authorization
+          description: AWS SigV4-signed authorization header
+          in: header
+          type: string
+          required: true
+        - name: x-amz-content-sha256
+          in: header
+          type: string
+          required: true
+        - name: x-amz-content-sha256
+          description: SHA-256 hash of payload
+          in: header
+          type: string
+          required: true
+        - name: x-amz-date
+          description: Date/Timestamp
+          in: header
+          type: string
+          required: true
+
+    responses:
+        200:
+            description: Signed certificate and assigned tenant
+            schema:
+                properties:
+                    presignedUrl:
+                        type: string
+                        description: AWS S3 Pre-signed URL with "put-object" permissions
+                    uploadBucket:
+                        type: string
+                        description: Name of bucket used with Pre-signed URL
+        403:
+            description: See IAM auth responses
+
+    """
+
     request = app.current_request
     context = request.context
     print("Context:")
@@ -113,6 +210,15 @@ def upload_files():
 
 
 def retrieve_metadata_for_token(body):
+    """
+    Checks Dynamo for token and then if it's been used or expired
+    :param body:
+    Body from request which includes the registration token
+    :return:
+    Dynamo item response, 200
+    Invalid token, 400
+    Token already used or expired, 401
+    """
     key = {
         'regToken': body['regToken']
     }
@@ -150,7 +256,13 @@ def retrieve_metadata_for_token(body):
 
 
 def register_thing(csr, metadata, serial_number):
-
+    """
+    Takes data from Dynamo and uses it to register thing with AWS IoT
+    :param csr:
+    :param metadata:
+    :param serial_number:
+    :return:
+    """
     iot_response = iot_client.register_thing(
         templateBody=json.dumps(iot_provisioning_template),
         parameters={
@@ -163,7 +275,7 @@ def register_thing(csr, metadata, serial_number):
     )
     return iot_response['certificatePem']
 
-
+# Provisioning template used with registerThing API call
 iot_provisioning_template = {
     "Parameters": {
         "SerialNumber": {

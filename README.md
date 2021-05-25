@@ -17,7 +17,7 @@ This sample also contains some useful code snippets/libraries to demo the follow
 
 Below is a sequence diagram and overview diagram for this demo.
 
-![Registration Code Provisioning Flow with S3 Upload](registration_provisioning_flow_with_s3_upload.png)
+![Registration Code Provisioning Flow with S3 Upload](registration_provisioning_flow_with_s3_upload_sequence.png)
 
 ![Registration Code Provisioning Flow with S3 Upload Overview](registration_provisioning_flow_with_s3_upload_overview.png)
 
@@ -120,7 +120,7 @@ the correct environment variables are configured. These are:
 
 `IOT_ENDPOINT` - PREFIX ONLY (everything before ".iot" or "-ats.iot"). This can be found under "Settings" in the IoT console or by running `aws iot describe-endpoint` in the AWS CLI
 
-`CREDENTIAL_ENDPOINT` - PREFIX ONLY (everything before ".credentials"). This can only be found by running `aws iot describe-endpoint --endpoint-type iot:CredentialProvider` in the AWS CLI
+`CREDENTIALS_ENDPOINT` - PREFIX ONLY (everything before ".credentials"). This can only be found by running `aws iot describe-endpoint --endpoint-type iot:CredentialProvider` in the AWS CLI
 
 `AWS_DEFAULT_REGION` - Eg. us-east-1
 

@@ -131,7 +131,7 @@ A sample Docker environment file has been included if you choose to run the clie
 #### Option A - Running natively in Python:
 
 1. Download the AWS IoT CA server certificate from [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem) and 
-store it in `client` directory. This will be used by the IoT client to trust the AWS IoT Core Device Gateway.
+store it in the `client` directory. This will be used by the IoT client to trust the AWS IoT Core Device Gateway.
 
 2. Make sure the correct environment variables mentioned above are configured. The exact commands to do
 this might vary slightly between operating systems and runtime environments. But generally in standard Linux/Unix shells 

@@ -128,27 +128,26 @@ console or by running `aws iot describe-endpoint` in the AWS CLI
 
 A sample Docker environment file has been included if you choose to run the client in Docker.
 
-Finally, you'll need to download the Amazon Root CA server certificate from [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem).
-Make sure to store it in the same directory as the IoT Client. It's especially important to make sure to do this *before*
-you build your Docker image if that's the runtime you choose to use.
-
 #### Option A - Running natively in Python:
 
-You'll need to make sure the correct environment variables mentioned above are configured. The exact commands to do
+1. Download the AWS IoT CA server certificate from [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem) and 
+store it in `client` directory. This will be used by the IoT client to trust the AWS IoT Core Device Gateway.
+
+2. Make sure the correct environment variables mentioned above are configured. The exact commands to do
 this might vary slightly between operating systems and runtime environments. But generally in standard Linux/Unix shells 
 it's accomplished by running `$ export <KEY>=<VALUE>` for each environment variable.
 
-With environment variables set, you're ready to start the client. The Python client requires no arguments passed to it.
+3. With environment variables set, you're ready to start the client. The Python client requires no arguments passed to it.
 
 `python iot_client.py`
 
 #### Option B - Running in Docker
 
-For running with docker, you'll need to build the container locally using the included Dockerfile.
+1. For running with docker, you'll need to build the container locally using the included Dockerfile.
 
 `docker build -t <use any image tag name here> .`
 
-Make sure the previously mentioned environment file has the correct values set and then `docker run` with the following command:
+2. Make sure the previously mentioned environment file has the correct values set and then `docker run` with the following command:
 
 `docker run -p 5000:5000 --env-file docker.env -it <image tag>`
 

@@ -12,7 +12,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building and deploying
-      - cdk deploy
+      - cdk deploy --require-approval never
   post_build:
     commands:
       - echo Build completed on `date`

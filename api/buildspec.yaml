@@ -7,7 +7,7 @@ phases:
       - npm install -g cdk
       - pip install -r requirements.txt
       - echo Bootstrapping account for CDK
-      - cdk boostrap
+      - cdk bootstrap
   build:
     commands:
       - echo Build started on `date`

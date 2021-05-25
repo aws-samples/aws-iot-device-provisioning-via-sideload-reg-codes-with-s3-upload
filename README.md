@@ -80,7 +80,7 @@ Once all dependencies are installed, you'll need to activate the shell with `pip
 
 #### Installing Dependencies Globally
 
-From the root directory, `cd api` and then `pip install -r requirements.txt`
+From the root directory, switch to the `api` directory with `cd api` and then run `pip install -r requirements.txt`
 
 There's also separate requirements files in the ``infrastructure``
 and ``runtime`` directories if you'd prefer to have separate virtual
@@ -119,13 +119,13 @@ These Thing Types do not need any configuration other than their names.
 The IoT client can either be run as a Docker container or a native Python application. In both cases, you'll need to ensure
 the correct environment variables are configured. These are:
 
-IOT_ENDPOINT - PREFIX ONLY (everything before ".iot" or "-ats.iot"). This can be found under "Settings" in the IoT console or by running `aws iot describe-endpoint` in the AWS CLI
+`IOT_ENDPOINT` - PREFIX ONLY (everything before ".iot" or "-ats.iot"). This can be found under "Settings" in the IoT console or by running `aws iot describe-endpoint` in the AWS CLI
 
-CREDENTIAL_ENDPOINT - PREFIX ONLY (everything before ".credentials"). This can only be found by running `aws iot describe-endpoint --endpoint-type iot:CredentialProvider` in the AWS CLI
+`CREDENTIAL_ENDPOINT` - PREFIX ONLY (everything before ".credentials"). This can only be found by running `aws iot describe-endpoint --endpoint-type iot:CredentialProvider` in the AWS CLI
 
-AWS_DEFAULT_REGION - Eg. us-east-1
+`AWS_DEFAULT_REGION` - Eg. us-east-1
 
-REG_API - Endpoint of Registration API (eg. https://abc123.execute-api.us-east-1.amazonaws.com)
+`REG_API` - Endpoint of Registration API (eg. https://abc123.execute-api.us-east-1.amazonaws.com)
 
 A sample Docker environment file has been included.
 
@@ -152,43 +152,46 @@ Make sure the previously mentioned environment file has the correct values set a
 ## Demo
 
 Ensure all setup steps are complete, the API has been provisioned successfully, and the IoT client pre-requisites have 
-been installed. The overview of the demo steps are as follows:
+been installed. 
 
-1) Start IoT client
-2) Make API call to get registration token
-3) Pass registration token to local IoT client
-4) The IoT client will then do the rest on its own including:
-    A) Call the Registration API with the token to get a certificate
-    B) Initialize the MQTT client with the certificate
-    C) Call the AWS IoT Credentials Provider to receive AWS STS credentials
-    D) Call the Registration API with a SigV4 authentication header derived from the STS credentials 
+### Overview
+The overview of the demo steps are as follows:
+
+1. Start IoT client
+2. Make API call to get registration token
+3. Pass registration token to local IoT client
+4. The IoT client will then do the rest on its own including:
+    1. Call the Registration API with the token to get a certificate
+    2. Initialize the MQTT client with the certificate
+    3. Call the AWS IoT Credentials Provider to receive AWS STS credentials
+    4. Call the Registration API with a SigV4 authentication header derived from the STS credentials 
     to receive an S3  pre-signed URL
-    E) Upload sample data to the S3 bucket created in the CloudFormation stack using the S3 pre-signed URL 
+    5. Upload sample data to the S3 bucket created in the CloudFormation stack using the S3 pre-signed URL 
 
-  
- - You will need to make an initial call to the registration API to get a token. When this request is made, the API will
-  generate a token as well as dummy metadata including "tenant", "location", "deviceType", and save it all to a DynamoDB table. 
-  To do this, you will make a "GET" request to the registration API to retrieve the registration token
+### Detailed steps
+1. Local IoT client should already be started by this point
+2. You will need to make an initial call to the registration API to get a token. When this request is made, the API will 
+generate a token as well as dummy metadata including "tenant", "location", "deviceType", and save it all to a DynamoDB table. 
+To do this, you will make a "GET" request to the registration API to retrieve the registration token. 
 The URL is: <endpoint from CloudFormation stack>/api/token
-
 `curl <endpoint>/api/token`
   
-Copy the token out of the `curl` response and use it to create another API call to the local IoT client.
-The registration token will then be used to authenticate to the backend and retrieve a certificate. The IoT client will
-also then be able to complete the demo as previously described. Please note the token expires in 5 minutes.
+3. Copy the token out of the `curl` response and use it to create another API call to the local IoT client.
 
 `curl --request POST '127.0.0.1:5000/regToken' --header 'Content-Type: application/json' \
 --data-raw '{"registrationCode": <token from previous request>}'`
 
-If successful, the IoT client should now be able to complete the demo on its own. You'll know everything was successful 
- when the last output from the IoT client is "Successfully uploaded data to S3". Open the S3 bucket that was created
-in the CloudFormation template and confirm that the sample data is shown there with a key prefix of 
-"<tenant>/<thing_name>/sample_data_".
+The registration token will then be used to authenticate to the backend and retrieve a certificate. The IoT client will
+also then be able to complete the demo as previously described. Please note the token expires in 5 minutes.
+
+4. If successful, the IoT client should now be able to complete the demo on its own. You'll know everything was successful 
+when the last output from the IoT client is "Successfully uploaded data to S3". Open the S3 bucket that was created
+in the CloudFormation template and confirm that the sample data is shown there with a key prefix of "<tenant>/<thing_name>/sample_data_".
 
 ## Cleanup
 
-1) Delete items out of DynamoDB
-2) Delete objects out of S3
+1) Delete all items out of DynamoDB
+2) Delete all objects out of S3
 3) Delete CloudFormation stack
 4) Delete AWS IoT Thing Types
 5) Delete AWS IoT Role Aliases

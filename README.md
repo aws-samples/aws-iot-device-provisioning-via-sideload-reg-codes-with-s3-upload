@@ -57,8 +57,7 @@ the requirements file with the required dependencies, and the Dockerfile.
 
 First, you'll need to install the AWS CDK if you haven't already.
 The CDK requires Node.js and npm to run.
-See the `Getting started with the AWS CDK
-<https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html>`__ for
+See the [Getting started with the AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) for
 more details.
 
 `npm install -g aws-cdk`

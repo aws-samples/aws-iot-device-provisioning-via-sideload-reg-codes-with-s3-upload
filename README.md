@@ -132,6 +132,7 @@ A sample Docker environment file has been included if you choose to run the clie
 
 1. Download the AWS IoT CA server certificate from [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem) and 
 store it in the `client` directory. This will be used by the IoT client to trust the AWS IoT Core Device Gateway.
+`wget -O client/AmazonRootCA1.pem https://www.amazontrust.com/repository/AmazonRootCA1.pem`
 
 2. Make sure the correct environment variables mentioned above are configured. The exact commands to do
 this might vary slightly between operating systems and runtime environments. But generally in standard Linux/Unix shells 
@@ -181,7 +182,7 @@ The URL for the request is: <Registration API endpoint from CloudFormation stack
   
 3. Copy the token out of the response from the previous request and use it to create a "POST" request to the local IoT client. 
 Please note the token expires in 5 minutes. The URL for this request is `127.0.0.1:5000/regToken`. 
-The body should be JSON and the structure is: `{"registrationCode": <value>}`
+The body should be JSON and the structure is: `{"registrationCode": "<value>"}`
 
 `curl --request POST '127.0.0.1:5000/regToken' --header 'Content-Type: application/json' \
 --data-raw '{"registrationCode": <token from previous request>}'`

@@ -2,7 +2,7 @@
 
 ## Summary
 
-This sample provides an end-to-end demo of using a one-time use, short expiry registration code to provision devices by 
+This sample provides an end-to-end demo of using a single-use, short expiry registration code to provision devices by 
 sideloading the registration code via a local web service running on the device. The device can then use that 
 registration code to authenticate itself and initialize the provisioning process. This solves a common use-case of 
 transferring trust from an authenticated user to a device so the device can provision itself asynchronously. 

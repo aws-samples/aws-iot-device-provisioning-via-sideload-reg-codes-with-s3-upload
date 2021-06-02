@@ -1,5 +1,14 @@
 # Device Provisioning via Sideloaded Registration Codes
 
+## Table of contents
+* [Summary](#summary)
+* [Set Up](#set-up)
+* [Demo](#demo)
+* [Cleanup](#cleanup)
+* [Security](#security)
+* [License](#license)
+
+
 ## Summary
 
 This sample provides an end-to-end demo of using a single-use, short expiry registration code to provision devices by 
@@ -61,8 +70,10 @@ directory.
 First, you'll need to install the AWS CDK if you haven't already. The CDK requires Node.js and npm to run.
 See the [Getting started with the AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) for
 more details.
-
-    `npm install -g aws-cdk`
+```bash
+npm install -g aws-cdk
+```
+    
 
 Next you'll need to install the dependencies for the CDK deployment.
 
@@ -75,14 +86,18 @@ with the repo that you can use to install all dependencies to run the client. Fi
 https://pipenv.pypa.io/en/latest/install/
 
 Then you can use pipenv to install all the Python dependencies.
-
-    `pipenv install`
+```
+pipenv install
+```
 
 Once all dependencies are installed, you'll need to activate the shell with `pipenv shell`
 
 #### Installing Dependencies Globally
 
-From the root directory, switch to the `api` directory with `cd api` and then run `pip install -r requirements.txt`
+From the root directory, switch to the `api` directory with `cd api` and then run 
+```
+pip install -r requirements.txt
+```
 
 ### Deploying Code
 
@@ -90,12 +105,15 @@ Once the dependencies are installed, to work with the CDK and deploy your applic
 to the ``infrastructure`` directory.
 
 1. If this is you're first time using the CDK you'll need to bootstrap your AWS account with the resouces the CDK needs.
-
-    `cdk bootstrap`
+    ```
+    cdk bootstrap
+    ```
+    
 
 2. Now you're ready to deploy your application.
-
-    `cdk deploy`
+    ```
+    cdk deploy
+    ```
 
 Note: During deployment, the CDK will ask you to approve of the changes being created by CloudFormation, make sure to 
 type `y` when prompted.
@@ -104,7 +122,9 @@ type `y` when prompted.
 and that's the AWS IoT Credential Provider role alias and the AWS IoT Thing Types.
 
     1. The creation of the role alias can not be done via the console and must be done via a CLI command:
-    `aws iot create-role-alias --role-alias <tenant> --role-arn <Role arn from CDK template>`
+    ```
+    aws iot create-role-alias --role-alias <tenant> --role-arn <Role arn from CDK template>
+    ```
     You'll be using a fake "tenant" as the role alias name. In our case, that tenant name is `acme`.
     The role arn should come from the `AWSIoTCredentialProviderRole` role that was deployed with the CloudFormation template.
 
@@ -132,26 +152,33 @@ A sample Docker environment file has been included if you choose to run the clie
 
 1. Download the AWS IoT CA server certificate from [here](https://www.amazontrust.com/repository/AmazonRootCA1.pem) and 
 store it in the `client` directory. This will be used by the IoT client to trust the AWS IoT Core Device Gateway.
+    ```
+    wget -O client/AmazonRootCA1.pem https://www.amazontrust.com/repository/AmazonRootCA1.pem
+    ```
 
-    `wget -O client/AmazonRootCA1.pem https://www.amazontrust.com/repository/AmazonRootCA1.pem`
 
 2. Make sure the correct environment variables mentioned above are configured. The exact commands to do
 this might vary slightly between operating systems and runtime environments. But generally in standard Linux/Unix shells 
 it's accomplished by running `$ export <KEY>=<VALUE>` for each environment variable.
 
 3. With environment variables set, you're ready to start the client. The Python client requires no arguments passed to it.
-
-    `python iot_client.py`
+    ```
+    python iot_client.py
+    ```
+    
 
 #### Option B - Running in Docker
 
 1. For running with docker, you'll need to build the container locally using the included Dockerfile.
-
-    `docker build -t <use any image tag name here> .`
+    ```
+    docker build -t <use any image tag name here> .
+    ```
 
 2. Make sure the previously mentioned environment file has the correct values set and then `docker run` with the following command:
+    ```
+    docker run -p 5000:5000 --env-file docker.env -it <build-image-tag>
+    ```
 
-    `docker run -p 5000:5000 --env-file docker.env -it <image tag>`
 
 ## Demo
 
@@ -179,13 +206,17 @@ The overview of the demo steps are as follows:
 2. You will need to make a "GET" request to the registration API to get a token. When this request is made, the API will 
 generate a token as well as dummy metadata including "tenant", "location", "deviceType", and save it all to a DynamoDB table. 
 The URL for the request is: <Registration API endpoint from CloudFormation stack>/api/token
-    `curl <endpoint>/api/token`
+    ```
+    curl <REGISTRATION_API_ENDPOINT>/api/token
+    ```
   
 3. Copy the token out of the response from the previous request and use it to create a "POST" request to the local IoT client. 
 Please note the token expires in 5 minutes. The URL for this request is `127.0.0.1:5000/regToken`. 
 The body should be JSON and the structure is: `{"registrationCode": "<value>"}`
-
-    `curl --request POST '127.0.0.1:5000/regToken' --header 'Content-Type: application/json' --data-raw '{"registrationCode": <token from previous request>}'`
+    ```
+    curl --request POST '127.0.0.1:5000/regToken' --header 'Content-Type: application/json' --data-raw '{"registrationCode": <token from previous request>}'
+    ```
+    
 
 The registration token will then be used by the Registration API to authenticate the device and retrieve a certificate 
 issued by AWS IoT Core. Once The IoT client has the certificate, and the device has been registered, it will complete 

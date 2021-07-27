@@ -22,7 +22,7 @@ iot_client = boto3.client('iot')
 
 tenant_names = ['acme']
 locations = ['bos', 'jfk', 'lax', 'sfo', 'atl', 'chi']
-device_type = ['deviceTypeA']
+device_types = ['deviceTypeA']
 
 
 @app.route('/token', methods=['GET'])
@@ -49,7 +49,7 @@ def create_token():
         'regToken': reg_token,
         'location': random.choice(locations),
         'tenant': random.choice(tenant_names),
-        'deviceType': random.choice(device_type),
+        'deviceType': random.choice(device_types),
         'timestamp': int(time.time()),
         'timesUsed': 0
     }

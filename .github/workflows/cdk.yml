@@ -5,6 +5,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: cdk bootstrap
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+          cdk_subcommand: 'bootstrap'
+          actions_comment: true
+          working_dir: 'api/infrastructure'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+
       - name: cdk diff
         uses: youyo/aws-cdk-github-actions@v2
         with:

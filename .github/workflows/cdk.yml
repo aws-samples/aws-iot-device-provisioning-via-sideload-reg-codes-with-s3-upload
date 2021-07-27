@@ -4,7 +4,9 @@ jobs:
   aws_cdk:
     runs-on: ubuntu-latest
     steps:
-
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        
       - name: cdk bootstrap
         uses: youyo/aws-cdk-github-actions@v2
         with:

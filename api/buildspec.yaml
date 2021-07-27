@@ -4,8 +4,9 @@ phases:
   pre_build:
     commands:
       - npm install -g cdk
-      - pip install -r requirements.txt
+      - pip install -r api/requirements.txt
       - echo Bootstrapping account for CDK
+      - cd api/infrastructure
       - cdk bootstrap
   build:
     commands:

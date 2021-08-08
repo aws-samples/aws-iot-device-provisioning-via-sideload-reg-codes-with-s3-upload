@@ -7,28 +7,30 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
         
-      - name: cdk bootstrap
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          cdk_subcommand: 'bootstrap'
-          actions_comment: true
-          working_dir: 'api/infrastructure'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-1'
-          
+      - name: Install AWS CDK
+        run: npm install -g aws-cdk
 
-      - name: cdk deploy
-        uses: youyo/aws-cdk-github-actions@v2
+      - name: Install Pip dependencies
+        run: pip install -r requirements.txt
         with:
-          cdk_subcommand: 'deploy'
-          cdk_stack: 'stack1'
-          cdk_args: '--require-approval never'
-          actions_comment: false
+          working_dir: 'api'
+
+      - name: Bootstrap AWS CDK
+        run: cdk bootstrap
+        with:
           working_dir: 'api/infrastructure'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
+
+      - name: CDK Deploy
+        run: cdk deploy --require-approval never
+        with:
+          working_dir: 'api/infrastructure'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+          STACK_NAME: 'sideload-reg-codes-github'
 

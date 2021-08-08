@@ -5,6 +5,6 @@ from stacks.chaliceapp import ChaliceApp
 
 
 app = cdk.App()
-ChaliceApp(app, os.environ.get('STACK_NAME', 'device-registration-api')
+ChaliceApp(app, os.environ.get('STACK_NAME', 'device-registration-api'))
 
 app.synth()

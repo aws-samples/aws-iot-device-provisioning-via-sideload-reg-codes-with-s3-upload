@@ -18,11 +18,11 @@ transferring trust from an authenticated user to a device so the device can prov
 
 
 This sample also contains some useful code snippets/libraries to demo the following:
-1. CDK integration with Chalice to deploy API Gateway APIs, Lambda functions, DynamoDB tables, and S3 buckets
-2. Narrowly scoped IoT policies with policy variables and AWS IoT Credential Provider permissions
-3. AWS IoT Credential Provider API calls
-4. IAM Role with AWS IoT Credential Provider Policy Variables
-5. AWS SigV4 Authentication for API Gateway API calls
+1. [CDK integration with Chalice to deploy API Gateway APIs, Lambda functions, DynamoDB tables, and S3 buckets](api/infrastructure/stacks/chaliceapp.py#L16)
+2. [Narrowly scoped IoT policies with policy variables and AWS IoT Credential Provider permissions](api/infrastructure/stacks/chaliceapp.py#L115)
+3. [AWS IoT Credential Provider API calls](client/iot_client.py#L454)
+4. [IAM Role with AWS IoT Credential Provider Policy Variables](api/infrastructure/stacks/chaliceapp.py#L89)
+5. [AWS SigV4 Authentication for API Gateway API calls](client/aws_auth.py#L111)
 
 ### Architecture Overview
 

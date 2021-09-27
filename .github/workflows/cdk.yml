@@ -1,0 +1,38 @@
+on: [push]
+
+jobs:
+  aws_cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+        
+      - name: Install AWS CDK
+        run: npm install -g aws-cdk
+
+      - name: Install Pip dependencies
+        run: pip install -r requirements.txt
+        working-directory: 'api'
+
+      - name: Bootstrap AWS CDK
+        run: cdk bootstrap
+        working-directory: 'api/infrastructure'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+
+      - name: CDK Deploy
+        run: cdk deploy --require-approval never
+        working-directory: 'api/infrastructure'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+          STACK_NAME: 'sideload-reg-codes-github'
+

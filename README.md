@@ -55,62 +55,66 @@ Below is a sequence diagram and overview diagram for this sample.
 
 This project has 2 parts: The IoT Client and the Registration API.
 
-The registration API portion includes a CDK application and a Chalice application. These correspond to a 
+A. The registration API portion includes a CDK application and a Chalice application. These correspond to a 
 ``infrastructure`` and ``runtime`` directory respectively.  To run any CDK CLI commands, ensure you're in the
 ``infrastructure`` directory, and if you need to run any Chalice CLI commands, which you won't for this demo, ensure
 you're in the ``runtime`` directory.
 
-The IoT client portion consists the client itself with the AWS IoT Python SDK, the aws_auth library for AWS SigV4 auth,
+B. The IoT client portion consists the client itself with the AWS IoT Python SDK, the aws_auth library for AWS SigV4 auth,
 the requirements file with the required dependencies, and the Dockerfile. These are all stored under the `client`
 directory.
 
 
 ### Infrastructure and API deployment
 
-First, you'll need to install the AWS CDK if you haven't already. The CDK requires Node.js and npm to run.
+1. First, you'll need to install the AWS CDK if you haven't already. The CDK requires Node.js and npm to run.
 See the [Getting started with the AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) for
 more details.
 ```bash
 npm install -g aws-cdk
 ```
     
-
-Next you'll need to install the dependencies for the CDK deployment.
-
-There are two ways to do this. Either globally from the standard shell or using a virtual environment such as `pipenv`
+2. Next you'll need to install the dependencies for the CDK deployment. There are two ways to do this. Either globally from the standard shell or using a virtual environment such as `pipenv`
 
 #### Installing dependencies with pipenv
 
 The recommended way to install Python dependencies is with a virtual environment such as Pipenv. There's an included Pipfile
-with the repo that you can use to install all dependencies to run the client. First you'll need to make sure Pipenv is installed.
-https://pipenv.pypa.io/en/latest/install/
+with the repo that you can use to install all dependencies to run the client. 
 
-Then you can use pipenv to install all the Python dependencies.
-```
-pipenv install
-```
+1. First you'll need to make sure Pipenv is installed using these instructions: https://pipenv.pypa.io/en/latest/install/
 
-Once all dependencies are installed, you'll need to activate the shell with `pipenv shell`
+2. Then you can use pipenv to install all the Python dependencies.
+    ```
+    pipenv install
+    ```
+
+3. Once all dependencies are installed, you'll need to activate the shell with 
+    ```
+    pipenv shell
+    ```
 
 #### Installing Dependencies Globally
 
-From the root directory, switch to the `api` directory with `cd api` and then run 
-```
-pip install -r requirements.txt
-```
+1. From the root directory, switch to the `api` directory with `cd api` and then run 
+    ```
+    pip install -r requirements.txt
+    ```
 
 ### Deploying Code
 
-Once the dependencies are installed, to work with the CDK and deploy your application, you'll need to change directories
-to the ``infrastructure`` directory.
+1. The CDK assets are stored in the infrastructure directory, so that's where you'll run all of your CDK commands out of.
+    ```
+    cd infrastructure
+    ```
 
-1. If this is you're first time using the CDK you'll need to bootstrap your AWS account with the resouces the CDK needs.
+
+2. If this is you're first time using the CDK you'll need to bootstrap your AWS account with the resouces the CDK needs.
     ```
     cdk bootstrap
     ```
     
 
-2. Now you're ready to deploy your application.
+3. Now you're ready to deploy your application.
     ```
     cdk deploy
     ```
@@ -118,7 +122,7 @@ to the ``infrastructure`` directory.
 Note: During deployment, the CDK will ask you to approve of the changes being created by CloudFormation, make sure to 
 type `y` when prompted.
 
-3. There will be two pieces of infrastructure left to manually provision that can not be deployed with CloudFormation, 
+4. There will be two pieces of infrastructure left to manually provision that can not be deployed with CloudFormation, 
 and that's the AWS IoT Credential Provider role alias and the AWS IoT Thing Types.
 
     1. The creation of the role alias can not be done via the console and must be done via a CLI command:
@@ -241,4 +245,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
-
